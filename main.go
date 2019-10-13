@@ -1,8 +1,8 @@
 package main
 
 import (
-	"golang-template-api-authentication/routes"
 	"fmt"
+	"golang-template-api-authentication/routes"
 	"log"
 	"net/http"
 	"os"
