@@ -6,6 +6,8 @@ package utils
 
 import (
 	"fmt"
+    "os"
+    "github.com/joho/godotenv"
 	"net/smtp"
 )
 
@@ -20,16 +22,22 @@ func (s *smtpServer) Address() string {
 }
 
 func Send(msg string) {
+    err := godotenv.Load(".env")
+
+    if err != nil {
+        log.Fatal("Error loading .env file")
+    }
+
     // Sender data.
-    from := "dummygandalf34@gmail.com"
-    password := "Lescarottessontcuites31320!"
+    from := os.Getenv("email_smtp_user")
+    password := os.Getenv("email_smtp_password")
     // Receiver email address.
     to := []string{
         "dummygandalf34@gmail.com",
         "tariq.riahi@gmail.com",
     }
     // smtp server configuration.
-    smtpServer := smtpServer{host: "smtp.gmail.com", port: "587"}
+    smtpServer := smtpServer{host: os.Getenv("email_smtp_host"), port: os.Getenv("email_smtp_port")}
     // Message.
     message := []byte(msg)
     // Authentication.
