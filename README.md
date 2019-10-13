@@ -31,7 +31,7 @@ go get ./..
 go build
 ```
 
-Set your .env variables
+Set your .env variables at https://github.com/Gandalfounet/golang-template-api-authentication/blob/master/.env and start the executable
 
 ```
 ./golang-template-api-authentication
