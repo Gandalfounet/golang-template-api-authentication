@@ -26,6 +26,17 @@ type error interface {
 	Error() string
 }
 
+type Email struct {
+	Email string
+}
+type PasswordReset struct {
+	Token string
+	Password string
+}
+type AuthToken struct {
+	Token string
+}
+
 var db = utils.ConnectDB()
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -90,11 +101,13 @@ func Me(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
+
+
 func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	/*
 	Email: "abc"
 	*/
-	email := &models.Email{}
+	email := Email{}
 	err := json.NewDecoder(r.Body).Decode(email)
 	if err != nil {
 		var resp = map[string]interface{}{"status": false, "message": "Invalid request"}
@@ -126,17 +139,81 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&user)
 }
 
+
+
 func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	/*
 	Password: "abc",
 	Token: "abc"
 	*/
+	passwordDatas := PasswordReset{}
+	err := json.NewDecoder(r.Body).Decode(passwordDatas)
+
+	if err != nil {
+		var resp = map[string]interface{}{"status": false, "message": "Invalid request"}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	user := &models.User{}
+
+	if err := db.Where("ResetToken = ?", passwordDatas.Token).First(user).Error; err != nil {
+		var resp = map[string]interface{}{"status": false, "message": "Invalid Token"}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	pass, err := bcrypt.GenerateFromPassword([]byte(passwordDatas.Password), bcrypt.DefaultCost)
+	if err != nil {
+		fmt.Println(err)
+		err := ErrorResponse{
+			Err: "Password Encryption  failed",
+		}
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	user.Password = string(pass)
+
+	db.Save(&user)
+
+	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "You changed your password", Token: "", Expiry: time.Now()}
+
+	utils.Send(contentMsg)
+	json.NewEncoder(w).Encode(&user)
 }
+
+
 
 func Validate(w http.ResponseWriter, r *http.Request) {
 	/*
 	Token : "abc"
 	*/
+	tokenData := Token{}
+	err := json.NewDecoder(r.Body).Decode(tokenData)
+
+	if err != nil {
+		var resp = map[string]interface{}{"status": false, "message": "Invalid request"}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	user := &models.User{}
+
+	if err := db.Where("ValidationToken = ?", tokenData.Token).First(user).Error; err != nil {
+		var resp = map[string]interface{}{"status": false, "message": "Invalid Token"}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	user.Status = "verified"
+
+	db.Save(&user)
+
+	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "Account confirmed", Token: "", Expiry: time.Now()}
+
+	utils.Send(contentMsg)
+	json.NewEncoder(w).Encode(&user)
 }
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
