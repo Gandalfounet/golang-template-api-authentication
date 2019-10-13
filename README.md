@@ -18,10 +18,6 @@ Gmail account (Enable this feature : https://myaccount.google.com/lesssecureapps
 
 ### Installing
 
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
 ```
 git clone project
 cd golang-template-api-authentication
