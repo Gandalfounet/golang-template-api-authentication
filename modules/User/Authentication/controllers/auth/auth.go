@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+	"math/rand"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	//"github.com/gorilla/mux"
@@ -90,13 +91,56 @@ func Me(w http.ResponseWriter, r *http.Request) {
 }
 
 func ResetPassword(w http.ResponseWriter, r *http.Request) {
+	/*
+	Email: "abc"
+	*/
+	email := &models.Email{}
+	err := json.NewDecoder(r.Body).Decode(email)
+	if err != nil {
+		var resp = map[string]interface{}{"status": false, "message": "Invalid request"}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	user := &models.User{}
+
+	if err := db.Where("Email = ?", email.Email).First(user).Error; err != nil {
+		var resp = map[string]interface{}{"status": false, "message": "Email address not found"}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
 	
+	rand.Seed(time.Now().UnixNano())
+	resetToken := randSeq(25)
+	resetTokenExpiracy := ""
+
+	user.ResetToken = resetToken
+	user.ResetTokenExpiracy = resetTokenExpiracy
+
+	db.Save(&user)
+	utils.Send(resetToken)
+	json.NewEncoder(w).Encode(&user)
 }
 
 func UpdatePassword(w http.ResponseWriter, r *http.Request) {
-	
+	/*
+	Password: "abc",
+	Token: "abc"
+	*/
 }
 
 func Validate(w http.ResponseWriter, r *http.Request) {
-	
+	/*
+	Token : "abc"
+	*/
+}
+
+var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+func randSeq(n int) string {
+    b := make([]rune, n)
+    for i := range b {
+        b[i] = letters[rand.Intn(len(letters))]
+    }
+    return string(b)
 }
