@@ -1,6 +1,6 @@
 # Template Authentication API Golang
 
-This project is designed to provide a good starter server to build web application. It handles user features such as authentication, email validation, password reset, ...
+This project is designed to provide a good starter server to build web applications. It handles user features such as authentication, email validation, password reset, ...
 
 ## Getting Started
 
