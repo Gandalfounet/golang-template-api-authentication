@@ -35,6 +35,8 @@ go get ./..
 go build
 ```
 
+Set your .env variables
+
 ```
 ./golang-template-api-authentication
 ```
