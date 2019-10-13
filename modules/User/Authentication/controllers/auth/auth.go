@@ -112,13 +112,17 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	
 	rand.Seed(time.Now().UnixNano())
 	resetToken := randSeq(25)
-	resetTokenExpiracy := ""
+
+	timein := time.Now().Add(time.Hour * 0 + time.Minute * 10 + time.Second * 0)
 
 	user.ResetToken = resetToken
-	user.ResetTokenExpiracy = resetTokenExpiracy
+	user.ResetTokenExpiracy = timein
 
 	db.Save(&user)
-	utils.Send(resetToken)
+	
+	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "http://localhost/update/password/", Token: resetToken, Expiry: timein}
+
+	utils.Send(contentMsg)
 	json.NewEncoder(w).Encode(&user)
 }
 

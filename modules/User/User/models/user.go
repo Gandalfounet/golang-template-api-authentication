@@ -2,6 +2,7 @@ package models
 
 import (
 	"github.com/jinzhu/gorm"
+	"time"
 )
 
 //User struct declaration
@@ -15,6 +16,6 @@ type User struct {
 	Role 	 			string `json:"Role"`
 	Status 				string `json:"Status"`
 	ResetToken 			string `json:"ResetToken"`
-	ResetTokenExpiracy  string `json:"ResetTokenExpiracy"`
+	ResetTokenExpiracy  time.Time `json:"ResetTokenExpiracy"`
 	ValidationToken 	string `json:"ValidationToken"`
 }

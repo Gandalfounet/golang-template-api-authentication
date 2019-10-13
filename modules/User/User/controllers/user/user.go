@@ -57,11 +57,11 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	validationToken := randSeq(25)
 
-	utils.Send(validationToken)
+	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "http://localhost/update/status/", Token: validationToken, Expiry: time.Now()}
 
 	user.Status = "unverified"
 	user.ResetToken = ""
-	user.ResetTokenExpiracy = ""
+	user.ResetTokenExpiracy = time.Now()
 	user.ValidationToken = validationToken
 
 	createdUser := db.Create(user)
@@ -70,6 +70,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	if createdUser.Error != nil {
 		fmt.Println(errMessage)
 	}
+	utils.Send(contentMsg)
 	json.NewEncoder(w).Encode(createdUser)
 }
 

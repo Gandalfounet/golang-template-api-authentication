@@ -41,7 +41,7 @@ type ContentLoginToken struct {
     Token  string
     Expiry time.Time
 }
-func Send(msg string) {
+func Send(msg ContentLoginToken) {
     errTmp := parseTemplates()
     if errTmp != nil {
         log.Fatal("Error loading templates")
@@ -67,7 +67,7 @@ func Send(msg string) {
 
     buf := new(bytes.Buffer)
     
-    contentMsg := ContentLoginToken{Name: "Name", URL: "http://localhost/update/password/", Token: msg, Expiry: time.Now()}
+    contentMsg := msg
 
     if err := templates.ExecuteTemplate(buf, "resetPassword", contentMsg); err != nil {
         fmt.Println(err)
