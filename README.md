@@ -23,13 +23,19 @@ A step by step series of examples that tell you how to get a development env run
 Say what the step will be
 
 ```
-Give the example
+git clone project
+cd golang-template-api-authentication
 ```
 
-And repeat
-
 ```
-until finished
+go get ./..
 ```
 
-End with an example of getting some data out of the system or using it for a little demo
+```
+go build
+```
+
+```
+./golang-template-api-authentication
+```
+
