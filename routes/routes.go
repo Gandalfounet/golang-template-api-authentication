@@ -12,8 +12,8 @@ func Handlers() *mux.Router {
 
 	r := mux.NewRouter().StrictSlash(true)
 	r.Use(CommonMiddleware)
-	authRoutes.Handlers(r)
-	userRoutes.Handlers(r)
+	authModule.Handlers(r)
+	userModule.Handlers(r)
 
 	return r
 }

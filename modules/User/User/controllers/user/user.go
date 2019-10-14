@@ -1,4 +1,4 @@
-package userController
+package userModule
 
 import (
 	"golang-template-api-authentication/modules/User/User/models"

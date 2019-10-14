@@ -1,4 +1,4 @@
-package authController
+package authModule
 
 import (
 	"golang-template-api-authentication/modules/User/User/models"
@@ -11,7 +11,7 @@ import (
 	"math/rand"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	//"github.com/gorilla/mux"
+	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 
 	"os"
@@ -30,7 +30,6 @@ type Email struct {
 	Email string
 }
 type PasswordReset struct {
-	Token string
 	Password string
 }
 type AuthToken struct {
@@ -146,18 +145,24 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	Password: "abc",
 	Token: "abc"
 	*/
-	passwordDatas := PasswordReset{}
+	type test struct {
+		Password string
+	}
+	passwordDatas := &test{}
 	err := json.NewDecoder(r.Body).Decode(passwordDatas)
 
 	if err != nil {
+		fmt.Println(err)
 		var resp = map[string]interface{}{"status": false, "message": "Invalid request"}
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
-
+	params := mux.Vars(r)
+	token := params["token"]
 	user := &models.User{}
 
-	if err := db.Where("ResetToken = ?", passwordDatas.Token).First(user).Error; err != nil {
+	fmt.Println(token)
+	if err := db.Where("reset_token = ?", token).First(user).Error; err != nil {
 		var resp = map[string]interface{}{"status": false, "message": "Invalid Token"}
 		json.NewEncoder(w).Encode(resp)
 		return
@@ -189,18 +194,11 @@ func Validate(w http.ResponseWriter, r *http.Request) {
 	/*
 	Token : "abc"
 	*/
-	tokenData := Token{}
-	err := json.NewDecoder(r.Body).Decode(tokenData)
-
-	if err != nil {
-		var resp = map[string]interface{}{"status": false, "message": "Invalid request"}
-		json.NewEncoder(w).Encode(resp)
-		return
-	}
-
+	params := mux.Vars(r)
+	token := params["token"]
 	user := &models.User{}
 
-	if err := db.Where("ValidationToken = ?", tokenData.Token).First(user).Error; err != nil {
+	if err := db.Where("validation_token = ?", token).First(user).Error; err != nil {
 		var resp = map[string]interface{}{"status": false, "message": "Invalid Token"}
 		json.NewEncoder(w).Encode(resp)
 		return
