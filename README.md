@@ -24,7 +24,7 @@ cd golang-template-api-authentication
 ```
 
 ```
-go get ./..
+go get ./
 ```
 
 ```
