@@ -37,3 +37,20 @@ Set your .env variables at https://github.com/Gandalfounet/golang-template-api-a
 ./golang-template-api-authentication
 ```
 
+### TODO
+
+```
+Make services (model in MVC) / Shared folder in User module
+```
+
+```
+Pass template as param for emails
+```
+
+```
+Format the response from API to send only useful data
+```
+
+```
+Avoid duplicate by adding functions to utils folder
+```
