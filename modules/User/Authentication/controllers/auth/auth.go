@@ -26,15 +26,7 @@ type error interface {
 	Error() string
 }
 
-type Email struct {
-	Email string
-}
-type PasswordReset struct {
-	Password string
-}
-type AuthToken struct {
-	Token string
-}
+
 
 var db = utils.ConnectDB()
 
@@ -106,6 +98,10 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	/*
 	Email: "abc"
 	*/
+	type Email struct {
+		Email string
+	}
+
 	email := Email{}
 	err := json.NewDecoder(r.Body).Decode(email)
 	if err != nil {
