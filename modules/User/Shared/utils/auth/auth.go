@@ -3,7 +3,7 @@ package auth
 import (
 	"fmt"
 
-	"golang-template-api-authentication/modules/User/User/models"
+	"golang-template-api-authentication/modules/User/Shared/models"
 	"context"
 	"encoding/json"
 	"net/http"

@@ -1,18 +1,15 @@
 package userModule
 
 import (
-	"golang-template-api-authentication/modules/User/User/models"
+	"golang-template-api-authentication/modules/User/Shared/models"
 	"golang-template-api-authentication/utils"
 
 
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
-    "math/rand"
 
 	"github.com/gorilla/mux"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type ErrorResponse struct {
@@ -31,57 +28,6 @@ func MagaAPI(w http.ResponseWriter, r *http.Request) {
 
 func TestAPI(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("API live and kicking"))
-}
-
-
-
-//CreateUser function -- create a new user
-func CreateUser(w http.ResponseWriter, r *http.Request) {
-
-	user := &models.User{}
-	json.NewDecoder(r.Body).Decode(user)
-
-	pass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	if err != nil {
-		fmt.Println(err)
-		err := ErrorResponse{
-			Err: "Password Encryption  failed",
-		}
-		json.NewEncoder(w).Encode(err)
-	}
-
-	user.Password = string(pass)
-	user.Role = "basic"
-
-	rand.Seed(time.Now().UnixNano())
-
-	validationToken := randSeq(25)
-
-	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "http://localhost/update/status/", Token: validationToken, Expiry: time.Now()}
-
-	user.Status = "unverified"
-	user.ResetToken = ""
-	user.ResetTokenExpiracy = time.Now()
-	user.ValidationToken = validationToken
-
-	createdUser := db.Create(user)
-	var errMessage = createdUser.Error
-
-	if createdUser.Error != nil {
-		fmt.Println(errMessage)
-	}
-	utils.Send(contentMsg, "resetPassword")
-	json.NewEncoder(w).Encode(createdUser)
-}
-
-var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-
-func randSeq(n int) string {
-    b := make([]rune, n)
-    for i := range b {
-        b[i] = letters[rand.Intn(len(letters))]
-    }
-    return string(b)
 }
 
 func Me(w http.ResponseWriter, r *http.Request) {

@@ -50,3 +50,7 @@ Format the response from API to send only useful data
 ```
 Avoid duplicate by adding functions to utils folder
 ```
+
+```
+Handle reset password token expiracy
+```

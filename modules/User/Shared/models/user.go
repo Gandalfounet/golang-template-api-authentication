@@ -16,6 +16,6 @@ type User struct {
 	Role 	 			string `json:"Role"`
 	Status 				string `json:"Status"`
 	ResetToken 			string `json:"ResetToken"`
-	ResetTokenExpiracy  time.Time `json:"ResetTokenExpiracy"`
+	ResetTokenExpiry  time.Time `json:"ResetTokenExpiry"`
 	ValidationToken 	string `json:"ValidationToken"`
 }

@@ -41,7 +41,7 @@ type ContentLoginToken struct {
     Token  string
     Expiry time.Time
 }
-func Send(msg ContentLoginToken, templateEmail string) {
+func Send(msg ContentLoginToken, templateName string) {
     errTmp := parseTemplates()
     if errTmp != nil {
         log.Fatal("Error loading templates")
@@ -69,7 +69,7 @@ func Send(msg ContentLoginToken, templateEmail string) {
     
     contentMsg := msg
 
-    if err := templates.ExecuteTemplate(buf, templateEmail, contentMsg); err != nil {
+    if err := templates.ExecuteTemplate(buf, templateName, contentMsg); err != nil {
         fmt.Println(err)
         return
     }
@@ -106,9 +106,6 @@ func parse(msg string) (string, error) {
     if err := templates.ExecuteTemplate(buf, "loginToken", msg); err != nil {
         return "", err
     }
-    if err := templates.ExecuteTemplate(buf, "resetPassword", msg); err != nil {
-        return "", err
-    }
     prem, _ := premailer.NewPremailerFromString(buf.String(), premailer.NewOptions())
     html, err := prem.Transform()
     if err != nil {
@@ -127,7 +124,7 @@ func parse(msg string) (string, error) {
 
 func parseTemplates() error {
     templates = template.New("").Funcs(fMap)
-    return filepath.Walk("./modules/User/Authentication/templates", func(path string, info os.FileInfo, err error) error {
+    return filepath.Walk("./modules/User/Shared/templates", func(path string, info os.FileInfo, err error) error {
         if strings.Contains(path, ".html") {
             _, err = templates.ParseFiles(path)
             return err

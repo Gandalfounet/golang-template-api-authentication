@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"golang-template-api-authentication/modules/User/User/models"
+	"golang-template-api-authentication/modules/User/Shared/models"
 	"fmt"
 	"log"
 	"os"

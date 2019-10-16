@@ -1,7 +1,7 @@
 package authModule
 
 import (
-	"golang-template-api-authentication/modules/User/User/models"
+	"golang-template-api-authentication/modules/User/Shared/models"
 	"golang-template-api-authentication/utils"
 
 	"encoding/json"
@@ -30,15 +30,62 @@ type error interface {
 
 var db = utils.ConnectDB()
 
+//CreateUser function -- create a new user
+func Register(w http.ResponseWriter, r *http.Request) {
+
+	user := &models.User{}
+	json.NewDecoder(r.Body).Decode(user)
+
+	pass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		fmt.Println(err)
+		err := ErrorResponse{
+			Err: "Password Encryption  failed",
+		}
+		json.NewEncoder(w).Encode(err)
+	}
+
+	user.Password = string(pass)
+	user.Role = "basic"
+
+	rand.Seed(time.Now().UnixNano())
+
+	validationToken := randSeq(25)
+
+	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "http://localhost/update/status/", Token: validationToken, Expiry: time.Now()}
+
+	user.Status = "unverified"
+	user.ResetToken = ""
+	user.ResetTokenExpiry = time.Now()
+	user.ValidationToken = validationToken
+
+	createdUser := db.Create(user)
+	var errMessage = createdUser.Error
+
+	if createdUser.Error != nil {
+		fmt.Println(errMessage)
+	}
+	utils.Send(contentMsg, "resetPassword")
+	json.NewEncoder(w).Encode(createdUser)
+}
+
 func Login(w http.ResponseWriter, r *http.Request) {
 	user := &models.User{}
 	err := json.NewDecoder(r.Body).Decode(user)
 	if err != nil {
-		var resp = map[string]interface{}{"status": false, "message": "Invalid request"}
+		//400 => Bad request
+		var resp = map[string]interface{}{"status": false, "message": "Invalid request", "code": 400}
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
 	resp := FindOne(user.Email, user.Password)
+	u := resp["user"].(*models.User)
+	if u.Status == "unverified" {
+		//403 => Forbidden
+		var resp = map[string]interface{}{"status": false, "message": "Not verified", "code": 403}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
 	json.NewEncoder(w).Encode(resp)
 }
 
@@ -124,14 +171,18 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	timein := time.Now().Add(time.Hour * 0 + time.Minute * 10 + time.Second * 0)
 
 	user.ResetToken = resetToken
-	user.ResetTokenExpiracy = timein
+	user.ResetTokenExpiry = timein
 
 	db.Save(&user)
 	
 	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "http://localhost/update/password/", Token: resetToken, Expiry: timein}
 
 	utils.Send(contentMsg, "resetPassword")
-	json.NewEncoder(w).Encode(&user)
+	response := true
+	bolB, _ := json.Marshal(response)
+	fmt.Println(string(bolB))
+
+	json.NewEncoder(w).Encode(string(bolB))
 }
 
 
@@ -181,7 +232,11 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "You changed your password", Token: "", Expiry: time.Now()}
 
 	utils.Send(contentMsg, "resetPassword")
-	json.NewEncoder(w).Encode(&user)
+	response := true
+	bolB, _ := json.Marshal(response)
+	fmt.Println(string(bolB))
+
+	json.NewEncoder(w).Encode(string(bolB))
 }
 
 
@@ -207,7 +262,35 @@ func Validate(w http.ResponseWriter, r *http.Request) {
 	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "Account confirmed", Token: "", Expiry: time.Now()}
 
 	utils.Send(contentMsg, "resetPassword")
-	json.NewEncoder(w).Encode(&user)
+
+	
+	type response1 struct {
+	    Page   int
+	    Fruits []string
+	}
+	type response2 struct {
+	    Page   int      `json:"page"`
+	    Fruits []string `json:"fruits"`
+	}
+
+	res1D := &response1{
+        Page:   1,
+        Fruits: []string{"apple", "peach", "pear"}}
+    res1B, _ := json.Marshal(res1D)
+    fmt.Println(string(res1B))
+
+    res2D := &response2{
+        Page:   1,
+        Fruits: []string{"apple", "peach", "pear"}}
+    res2B, _ := json.Marshal(res2D)
+
+    fmt.Println(string(res2B))
+
+    response := true
+	bolB, _ := json.Marshal(response)
+	fmt.Println(string(bolB))
+
+	json.NewEncoder(w).Encode(string(res2B))
 }
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")

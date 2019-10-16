@@ -11,11 +11,15 @@ func Handlers(r *mux.Router) *mux.Router {
 
 	r.HandleFunc("/", userModule.TestAPI).Methods("GET")
 	r.HandleFunc("/api", userModule.TestAPI).Methods("GET")
-	r.HandleFunc("/register", userModule.CreateUser).Methods("POST")
-	r.HandleFunc("/login", authModule.Login).Methods("POST")
-	r.HandleFunc("/reset/password", authModule.ResetPassword).Methods("POST")
-	r.HandleFunc("/update/password/{token}", authModule.UpdatePassword).Methods("PUT")
-	r.HandleFunc("/validate/{token}", authModule.Validate).Methods("GET")
 	
+
+	// Auth route
+	p := r.PathPrefix("/auth").Subrouter()
+	p.HandleFunc("/register", authModule.Register).Methods("POST")
+	p.HandleFunc("/login", authModule.Login).Methods("POST")
+	p.HandleFunc("/reset/password", authModule.ResetPassword).Methods("POST")
+	p.HandleFunc("/update/password/{token}", authModule.UpdatePassword).Methods("PUT")
+	p.HandleFunc("/validate/{token}", authModule.Validate).Methods("GET")
+
 	return r
 }
