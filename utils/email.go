@@ -41,7 +41,7 @@ type ContentLoginToken struct {
     Token  string
     Expiry time.Time
 }
-func Send(msg ContentLoginToken) {
+func Send(msg ContentLoginToken, templateEmail string) {
     errTmp := parseTemplates()
     if errTmp != nil {
         log.Fatal("Error loading templates")
@@ -69,7 +69,7 @@ func Send(msg ContentLoginToken) {
     
     contentMsg := msg
 
-    if err := templates.ExecuteTemplate(buf, "resetPassword", contentMsg); err != nil {
+    if err := templates.ExecuteTemplate(buf, templateEmail, contentMsg); err != nil {
         fmt.Println(err)
         return
     }
@@ -104,6 +104,9 @@ func Send(msg ContentLoginToken) {
 func parse(msg string) (string, error) {
     buf := new(bytes.Buffer)
     if err := templates.ExecuteTemplate(buf, "loginToken", msg); err != nil {
+        return "", err
+    }
+    if err := templates.ExecuteTemplate(buf, "resetPassword", msg); err != nil {
         return "", err
     }
     prem, _ := premailer.NewPremailerFromString(buf.String(), premailer.NewOptions())

@@ -70,7 +70,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	if createdUser.Error != nil {
 		fmt.Println(errMessage)
 	}
-	utils.Send(contentMsg)
+	utils.Send(contentMsg, "resetPassword")
 	json.NewEncoder(w).Encode(createdUser)
 }
 

@@ -130,7 +130,7 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	
 	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "http://localhost/update/password/", Token: resetToken, Expiry: timein}
 
-	utils.Send(contentMsg)
+	utils.Send(contentMsg, "resetPassword")
 	json.NewEncoder(w).Encode(&user)
 }
 
@@ -180,7 +180,7 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 
 	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "You changed your password", Token: "", Expiry: time.Now()}
 
-	utils.Send(contentMsg)
+	utils.Send(contentMsg, "resetPassword")
 	json.NewEncoder(w).Encode(&user)
 }
 
@@ -206,7 +206,7 @@ func Validate(w http.ResponseWriter, r *http.Request) {
 
 	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "Account confirmed", Token: "", Expiry: time.Now()}
 
-	utils.Send(contentMsg)
+	utils.Send(contentMsg, "resetPassword")
 	json.NewEncoder(w).Encode(&user)
 }
 
