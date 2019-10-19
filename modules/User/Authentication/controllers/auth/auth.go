@@ -2,6 +2,7 @@ package authModule
 
 import (
 	"golang-template-api-authentication/modules/User/Shared/models"
+	"golang-template-api-authentication/modules/User/Shared/services"
 	"golang-template-api-authentication/utils"
 
 	"encoding/json"
@@ -10,12 +11,9 @@ import (
 	"time"
 	"math/rand"
 
-	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 
-	"os"
-	"github.com/joho/godotenv"
 )
 
 type ErrorResponse struct {
@@ -36,41 +34,19 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	user := &models.User{}
 	json.NewDecoder(r.Body).Decode(user)
 
-	pass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	userDb, err := userServices.CreateUser(user)
 	if err != nil {
-		fmt.Println(err)
-		err := ErrorResponse{
-			Err: "Password Encryption  failed",
-		}
-		json.NewEncoder(w).Encode(err)
+		var resp = map[string]interface{}{"status": false, "message": "An error occured", "code": 500}
+		json.NewEncoder(w).Encode(resp)
+		return
 	}
-
-	user.Password = string(pass)
-	user.Role = "basic"
-
-	rand.Seed(time.Now().UnixNano())
-
-	validationToken := randSeq(25)
-
-	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "http://localhost/update/status/", Token: validationToken, Expiry: time.Now()}
-
-	user.Status = "unverified"
-	user.ResetToken = ""
-	user.ResetTokenExpiry = time.Now()
-	user.ValidationToken = validationToken
-
-	createdUser := db.Create(user)
-	var errMessage = createdUser.Error
-
-	if createdUser.Error != nil {
-		fmt.Println(errMessage)
-	}
-	utils.Send(contentMsg, "resetPassword")
-	json.NewEncoder(w).Encode(createdUser)
+	json.NewEncoder(w).Encode(userDb)
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
+	var token string
 	user := &models.User{}
+
 	err := json.NewDecoder(r.Body).Decode(user)
 	if err != nil {
 		//400 => Bad request
@@ -78,60 +54,33 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
-	resp := FindOne(user.Email, user.Password)
-	u := resp["user"].(*models.User)
-	if u.Status == "unverified" {
+
+	userDb, err := userServices.FindOne(user)
+	if err != nil {
+		var resp = map[string]interface{}{"status": false, "message": "Invalid credentials"}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+	//u := resp["user"].(*models.User)
+	if userDb.Status == "unverified" {
 		//403 => Forbidden
 		var resp = map[string]interface{}{"status": false, "message": "Not verified", "code": 403}
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
-	json.NewEncoder(w).Encode(resp)
-}
 
-func FindOne(email, password string) map[string]interface{} {
-	user := &models.User{}
-
-	if err := db.Where("Email = ?", email).First(user).Error; err != nil {
-		var resp = map[string]interface{}{"status": false, "message": "Email address not found"}
-		return resp
-	}
-	expiresAt := time.Now().Add(time.Minute * 100000).Unix()
-
-	errf := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if errf != nil && errf == bcrypt.ErrMismatchedHashAndPassword { //Password does not match!
-		var resp = map[string]interface{}{"status": false, "message": "Invalid login credentials. Please try again"}
-		return resp
-	}
-
-	tk := &models.Token{
-		UserID: user.ID,
-		Name:   user.Name,
-		Email:  user.Email,
-		Role: user.Role,
-		StandardClaims: &jwt.StandardClaims{
-			ExpiresAt: expiresAt,
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
-
-	//Get the secret key from .env
-	errEnv := godotenv.Load(".env")
-	if errEnv != nil {
-		fmt.Println("Error loading .env file")
-	}
-	secretJwt := os.Getenv("secretJwt")
-
-	tokenString, error := token.SignedString([]byte(secretJwt))
-	if error != nil {
-		fmt.Println(error)
+	token, err = userServices.GetToken(userDb)
+	if err != nil {
+		var resp = map[string]interface{}{"status": false, "message": "An error occured", "code": 500}
+		json.NewEncoder(w).Encode(resp)
+		return
 	}
 
 	var resp = map[string]interface{}{"status": false, "message": "logged in"}
-	resp["token"] = tokenString //Store the token in the response
-	resp["user"] = user
-	return resp
+	resp["token"] = token //Store the token in the response
+	resp["user"] = userDb
+
+	json.NewEncoder(w).Encode(resp)
 }
 
 func Me(w http.ResponseWriter, r *http.Request) {
@@ -149,7 +98,7 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 		Email string
 	}
 
-	email := Email{}
+	email := &Email{}
 	err := json.NewDecoder(r.Body).Decode(email)
 	if err != nil {
 		var resp = map[string]interface{}{"status": false, "message": "Invalid request"}
