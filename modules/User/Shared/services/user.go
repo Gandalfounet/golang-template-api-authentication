@@ -39,17 +39,54 @@ func CreateUser(user *models.User) (*models.User, error){
 	return user, nil
 }
 
-func UpdateUser() {
+func UpdateUser(user *models.User) {
+	db.Save(&user)
+}
 
+func GetTokensPassword() (string, time.Time) {
+	resetToken := GenerateToken()
+	timein := time.Now().Add(time.Hour * 0 + time.Minute * 10 + time.Second * 0)
+	
+	return resetToken, timein
+}
+ 
+func GenerateToken() string {
+	rand.Seed(time.Now().UnixNano())
+	resetToken := randSeq(25)
+	return resetToken
 }
 
 func FindByEmail(user *models.User) (*models.User, error) {
-	fmt.Println(user.Email)
-	fmt.Println(user.Password)
 	userDb := &models.User{}
 
 	if err := db.Where("Email = ?", user.Email).First(userDb).Error; err != nil {
 		fmt.Println(err)
+		return nil, err
+	}
+
+	return userDb, nil
+}
+
+func FindByToken(token string) (*models.User, error) {
+	userDb := &models.User{}
+
+	if err := db.Where("reset_token = ?", token).First(userDb).Error; err != nil {
+		// var resp = map[string]interface{}{"status": false, "message": "Invalid Token"}
+		// json.NewEncoder(w).Encode(resp)
+		// return
+		return nil, err
+	}
+
+	return userDb, nil
+}
+
+func FindByValidationToken(token string) (*models.User, error) {
+	userDb := &models.User{}
+
+	if err := db.Where("validation_token = ?", token).First(userDb).Error; err != nil {
+		// var resp = map[string]interface{}{"status": false, "message": "Invalid Token"}
+		// json.NewEncoder(w).Encode(resp)
+		// return
 		return nil, err
 	}
 

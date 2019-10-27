@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-	"math/rand"
 
 	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
@@ -124,98 +123,96 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	/*
 	Email: "abc"
 	*/
-	type Email struct {
-		Email string
-	}
 
-	email := &Email{}
-	err := json.NewDecoder(r.Body).Decode(email)
+	user := &models.User{}
+	err := json.NewDecoder(r.Body).Decode(user)
 	if err != nil {
-		var resp = map[string]interface{}{"status": false, "message": "Invalid request"}
+		resp, err := utils.GetError(400, "en")
+		if err != nil {
+			json.NewEncoder(w).Encode(err)
+			return
+		}
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
 
-	user := &models.User{}
-
-	if err := db.Where("Email = ?", email.Email).First(user).Error; err != nil {
-		var resp = map[string]interface{}{"status": false, "message": "Email address not found"}
+	userDb, err := userServices.FindByEmail(user)
+	if err != nil {
+		resp, err := utils.GetError(404, "en")
+		if err != nil {
+			json.NewEncoder(w).Encode(err)
+			return
+		}
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
 	
-	rand.Seed(time.Now().UnixNano())
-	resetToken := randSeq(25)
-
-	timein := time.Now().Add(time.Hour * 0 + time.Minute * 10 + time.Second * 0)
-
-	user.ResetToken = resetToken
-	user.ResetTokenExpiry = timein
-
-	db.Save(&user)
+	resetToken, timein := userServices.GetTokensPassword()
+	userDb.ResetToken = resetToken
+	userDb.ResetTokenExpiry = timein
+	userServices.UpdateUser(userDb)
 	
 	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "http://localhost/update/password/", Token: resetToken, Expiry: timein}
 
 	utils.Send(contentMsg, "resetPassword")
-	response := true
-	bolB, _ := json.Marshal(response)
-	fmt.Println(string(bolB))
-
-	json.NewEncoder(w).Encode(string(bolB))
+	var resp = map[string]interface{}{"status": 200, "message": "Success"}
+	json.NewEncoder(w).Encode(resp)
 }
-
 
 
 func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	/*
-	Password: "abc",
-	Token: "abc"
+	Password: "abc", as POST
+	token: "abc" as get param
 	*/
 	type test struct {
 		Password string
 	}
 	passwordDatas := &test{}
 	err := json.NewDecoder(r.Body).Decode(passwordDatas)
-
 	if err != nil {
-		fmt.Println(err)
-		var resp = map[string]interface{}{"status": false, "message": "Invalid request"}
+		resp, err := utils.GetError(400, "en")
+		if err != nil {
+			json.NewEncoder(w).Encode(err)
+			return
+		}
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
+
 	params := mux.Vars(r)
 	token := params["token"]
-	user := &models.User{}
-
-	fmt.Println(token)
-	if err := db.Where("reset_token = ?", token).First(user).Error; err != nil {
-		var resp = map[string]interface{}{"status": false, "message": "Invalid Token"}
+	userDb, err := userServices.FindByToken(token)
+	if err != nil {
+		resp, err := utils.GetError(404, "en")
+		if err != nil {
+			json.NewEncoder(w).Encode(err)
+			return
+		}
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
 
 	pass, err := bcrypt.GenerateFromPassword([]byte(passwordDatas.Password), bcrypt.DefaultCost)
 	if err != nil {
-		fmt.Println(err)
-		err := ErrorResponse{
-			Err: "Password Encryption  failed",
+		resp, err := utils.GetError(500, "en")
+		if err != nil {
+			json.NewEncoder(w).Encode(err)
+			return
 		}
-		json.NewEncoder(w).Encode(err)
+		json.NewEncoder(w).Encode(resp)
 		return
 	}
 
-	user.Password = string(pass)
+	userDb.Password = string(pass)
 
-	db.Save(&user)
+	userServices.UpdateUser(userDb)
 
 	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "You changed your password", Token: "", Expiry: time.Now()}
 
 	utils.Send(contentMsg, "resetPassword")
-	response := true
-	bolB, _ := json.Marshal(response)
-	fmt.Println(string(bolB))
-
-	json.NewEncoder(w).Encode(string(bolB))
+	var resp = map[string]interface{}{"status": 200, "message": "Success"}
+	json.NewEncoder(w).Encode(resp)
 }
 
 
@@ -226,58 +223,26 @@ func Validate(w http.ResponseWriter, r *http.Request) {
 	*/
 	params := mux.Vars(r)
 	token := params["token"]
-	user := &models.User{}
 
-	if err := db.Where("validation_token = ?", token).First(user).Error; err != nil {
-		var resp = map[string]interface{}{"status": false, "message": "Invalid Token"}
+	userDb, err := userServices.FindByValidationToken(token)
+	if err != nil {
+		resp, err := utils.GetError(404, "en")
+		if err != nil {
+			json.NewEncoder(w).Encode(err)
+			return
+		}
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
 
-	user.Status = "verified"
+	userDb.Status = "verified"
 
-	db.Save(&user)
+	userServices.UpdateUser(userDb)
 
 	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "Account confirmed", Token: "", Expiry: time.Now()}
 
 	utils.Send(contentMsg, "resetPassword")
 
-	
-	type response1 struct {
-	    Page   int
-	    Fruits []string
-	}
-	type response2 struct {
-	    Page   int      `json:"page"`
-	    Fruits []string `json:"fruits"`
-	}
-
-	res1D := &response1{
-        Page:   1,
-        Fruits: []string{"apple", "peach", "pear"}}
-    res1B, _ := json.Marshal(res1D)
-    fmt.Println(string(res1B))
-
-    res2D := &response2{
-        Page:   1,
-        Fruits: []string{"apple", "peach", "pear"}}
-    res2B, _ := json.Marshal(res2D)
-
-    fmt.Println(string(res2B))
-
-    response := true
-	bolB, _ := json.Marshal(response)
-	fmt.Println(string(bolB))
-
-	json.NewEncoder(w).Encode(string(res2B))
-}
-
-var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-
-func randSeq(n int) string {
-    b := make([]rune, n)
-    for i := range b {
-        b[i] = letters[rand.Intn(len(letters))]
-    }
-    return string(b)
+	var resp = map[string]interface{}{"status": 200, "message": "Success"}
+	json.NewEncoder(w).Encode(resp)
 }
