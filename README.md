@@ -40,17 +40,5 @@ Set your .env variables at https://github.com/Gandalfounet/golang-template-api-a
 ### TODO
 
 ```
-Make services (model in MVC) / Shared folder in User module
-```
-
-```
-Format the response from API to send only useful data
-```
-
-```
 Avoid duplicate by adding functions to utils folder
-```
-
-```
-Handle reset password token expiracy
 ```

@@ -193,6 +193,18 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//Check token expiry
+	diff := time.Now().Sub(userDb.ResetTokenExpiry)
+	if(diff.Seconds() > 0) {
+		resp, err := utils.GetError(401, "en")
+		if err != nil {
+			json.NewEncoder(w).Encode(err)
+			return
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
 	pass, err := bcrypt.GenerateFromPassword([]byte(passwordDatas.Password), bcrypt.DefaultCost)
 	if err != nil {
 		resp, err := utils.GetError(500, "en")
