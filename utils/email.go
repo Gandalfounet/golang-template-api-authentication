@@ -131,6 +131,9 @@ func parseTemplates() error {
     templates.ParseFiles("./modules/User/Shared/templates/email/styles.html")
     templates.ParseFiles("./modules/User/Shared/templates/email/auth/loginToken.html")
     templates.ParseFiles("./modules/User/Shared/templates/email/auth/resetPassword.html")
+    templates.ParseFiles("./modules/User/Shared/templates/email/auth/updatePassword.html")
+    templates.ParseFiles("./modules/User/Shared/templates/email/auth/validatePassword.html")
+
     return nil
 }
 

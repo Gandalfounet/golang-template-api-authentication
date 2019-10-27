@@ -34,8 +34,7 @@ func CreateUser(user *models.User) (*models.User, error){
 		fmt.Println(userDb.Error)
 		return nil, userDb.Error
 	}
-	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "http://localhost/update/status/", Token: validationToken, Expiry: time.Now()}
-	go utils.Send(contentMsg, "resetPassword")
+	
 	return user, nil
 }
 

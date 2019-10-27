@@ -33,6 +33,10 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
+
+	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "http://localhost/update/status/", Token: userDb.ValidationToken}
+	go utils.Send(contentMsg, "loginToken")
+
 	json.NewEncoder(w).Encode(userDb)
 }
 
@@ -144,7 +148,7 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	
 	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "http://localhost/update/password/", Token: resetToken, Expiry: timein}
 
-	utils.Send(contentMsg, "resetPassword")
+	go utils.Send(contentMsg, "resetPassword")
 	var resp = map[string]interface{}{"status": 200, "message": "Success"}
 	json.NewEncoder(w).Encode(resp)
 }
@@ -210,9 +214,9 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 
 	userServices.UpdateUser(userDb)
 
-	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "You changed your password", Token: "", Expiry: time.Now()}
+	contentMsg := utils.ContentLoginToken{Name: "Name"}
 
-	utils.Send(contentMsg, "resetPassword")
+	go utils.Send(contentMsg, "updatePassword")
 	var resp = map[string]interface{}{"status": 200, "message": "Success"}
 	json.NewEncoder(w).Encode(resp)
 }
@@ -241,9 +245,9 @@ func Validate(w http.ResponseWriter, r *http.Request) {
 
 	userServices.UpdateUser(userDb)
 
-	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "Account confirmed", Token: "", Expiry: time.Now()}
+	contentMsg := utils.ContentLoginToken{Name: "Name"}
 
-	utils.Send(contentMsg, "resetPassword")
+	go utils.Send(contentMsg, "validatePassword")
 
 	var resp = map[string]interface{}{"status": 200, "message": "Success"}
 	json.NewEncoder(w).Encode(resp)
