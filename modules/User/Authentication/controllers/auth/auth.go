@@ -34,7 +34,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "http://localhost/update/status/", Token: userDb.ValidationToken}
+	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "http://localhost:8080/auth/validate/", Token: userDb.ValidationToken}
 	go utils.Send(contentMsg, "loginToken")
 
 	json.NewEncoder(w).Encode(userDb)
@@ -146,7 +146,7 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	userDb.ResetTokenExpiry = timein
 	userServices.UpdateUser(userDb)
 	
-	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "http://localhost/update/password/", Token: resetToken, Expiry: timein}
+	contentMsg := utils.ContentLoginToken{Name: "Name", URL: "http://localhost:8080/auth/update/password/", Token: resetToken, Expiry: timein}
 
 	go utils.Send(contentMsg, "resetPassword")
 	var resp = map[string]interface{}{"status": 200, "message": "Success"}
