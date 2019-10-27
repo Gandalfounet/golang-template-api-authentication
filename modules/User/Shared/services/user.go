@@ -43,7 +43,7 @@ func UpdateUser() {
 
 }
 
-func FindOne(user *models.User) (*models.User, error){
+func FindByEmail(user *models.User) (*models.User, error) {
 	fmt.Println(user.Email)
 	fmt.Println(user.Password)
 	userDb := &models.User{}
@@ -53,13 +53,16 @@ func FindOne(user *models.User) (*models.User, error){
 		return nil, err
 	}
 
-	errf := bcrypt.CompareHashAndPassword([]byte(userDb.Password), []byte(user.Password))
+	return userDb, nil
+}
+
+func CheckPassword(user *models.User, pw string) (error) {
+	errf := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(pw))
 	if errf != nil && errf == bcrypt.ErrMismatchedHashAndPassword { //Password does not match!
 		fmt.Println(errf)
-		return nil, errf
+		return errf
 	}
-
-	return userDb, nil
+	return nil
 }
 
 func GetUser() {

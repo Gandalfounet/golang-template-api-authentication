@@ -36,7 +36,11 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	userDb, err := userServices.CreateUser(user)
 	if err != nil {
-		var resp = map[string]interface{}{"status": false, "message": "An error occured", "code": 500}
+		resp, err := utils.GetError(500, "fr")
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(resp)
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
@@ -49,29 +53,55 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(user)
 	if err != nil {
-		//400 => Bad request
-		var resp = map[string]interface{}{"status": false, "message": "Invalid request", "code": 400}
+		resp, err := utils.GetError(400, "en")
+		if err != nil {
+			json.NewEncoder(w).Encode(err)
+			return
+		}
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
 
-	userDb, err := userServices.FindOne(user)
+	userDb, err := userServices.FindByEmail(user)
 	if err != nil {
-		var resp = map[string]interface{}{"status": false, "message": "Invalid credentials"}
+		resp, err := utils.GetError(404, "en")
+		if err != nil {
+			json.NewEncoder(w).Encode(err)
+			return
+		}
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
+
+	errPw := userServices.CheckPassword(userDb, user.Password)
+	if errPw != nil {
+		resp, err := utils.GetError(404, "en")
+		if err != nil {
+			json.NewEncoder(w).Encode(err)
+			return
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
 	//u := resp["user"].(*models.User)
 	if userDb.Status == "unverified" {
-		//403 => Forbidden
-		var resp = map[string]interface{}{"status": false, "message": "Not verified", "code": 403}
+		resp, err := utils.GetError(403, "en")
+		if err != nil {
+			json.NewEncoder(w).Encode(err)
+			return
+		}
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
 
 	token, err = userServices.GetToken(userDb)
 	if err != nil {
-		var resp = map[string]interface{}{"status": false, "message": "An error occured", "code": 500}
+		resp, err := utils.GetError(500, "en")
+		if err != nil {
+			json.NewEncoder(w).Encode(err)
+			return
+		}
 		json.NewEncoder(w).Encode(resp)
 		return
 	}

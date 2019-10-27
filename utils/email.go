@@ -12,7 +12,7 @@ import (
 	"net/smtp"
     "html/template"
     "bytes"
-    "path/filepath"
+    //"path/filepath"
     "strconv"
     "strings"
     "time"
@@ -124,13 +124,22 @@ func parse(msg string) (string, error) {
 
 func parseTemplates() error {
     templates = template.New("").Funcs(fMap)
-    return filepath.Walk("./modules/User/Shared/templates", func(path string, info os.FileInfo, err error) error {
-        if strings.Contains(path, ".html") {
-            _, err = templates.ParseFiles(path)
-            return err
-        }
+
+    //return filepath.Walk("./modules/User/Shared/templates", walkPath)
+    templates.ParseFiles("./modules/User/Shared/templates/email/footer.html")
+    templates.ParseFiles("./modules/User/Shared/templates/email/header.html")
+    templates.ParseFiles("./modules/User/Shared/templates/email/styles.html")
+    templates.ParseFiles("./modules/User/Shared/templates/email/auth/loginToken.html")
+    templates.ParseFiles("./modules/User/Shared/templates/email/auth/resetPassword.html")
+    return nil
+}
+
+func walkPath(path string, info os.FileInfo, err error) error {
+    if strings.Contains(path, ".html") {
+        _, err = templates.ParseFiles(path)
         return err
-    })
+    }
+    return err
 }
 
 var fMap = template.FuncMap{
