@@ -15,16 +15,6 @@ import (
 
 )
 
-type ErrorResponse struct {
-	Err string
-}
-
-type error interface {
-	Error() string
-}
-
-
-
 var db = utils.ConnectDB()
 
 //CreateUser function -- create a new user

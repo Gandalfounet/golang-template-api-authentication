@@ -38,7 +38,3 @@ Set your .env variables at https://github.com/Gandalfounet/golang-template-api-a
 ```
 
 ### TODO
-
-```
-Avoid duplicate by adding functions to utils folder
-```

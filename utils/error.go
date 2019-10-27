@@ -8,8 +8,6 @@ type error interface {
 	Error() string
 }
 
-
-
 func GetError(code int, lang string) (map[string]interface{}, map[string]interface{}){
 	errors := map[int]map[string]string{
         200: map[string]string{

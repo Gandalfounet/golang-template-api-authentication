@@ -12,14 +12,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type ErrorResponse struct {
-	Err string
-}
-
-type error interface {
-	Error() string
-}
-
 var db = utils.ConnectDB()
 
 func MagaAPI(w http.ResponseWriter, r *http.Request) {
