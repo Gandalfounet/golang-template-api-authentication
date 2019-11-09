@@ -12,7 +12,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var db = utils.ConnectDB()
 
 func MagaAPI(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("i am here")
@@ -29,6 +28,7 @@ func Me(w http.ResponseWriter, r *http.Request) {
 
 //FetchUser function
 func FetchUsers(w http.ResponseWriter, r *http.Request) {
+	db := utils.GetDB()
 	user := r.Context().Value("user")
 	fmt.Println(user)
 	var users []models.User
@@ -38,6 +38,7 @@ func FetchUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
+	db := utils.GetDB()
 	user := &models.User{}
 	params := mux.Vars(r)
 	var id = params["id"]
@@ -48,6 +49,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	db := utils.GetDB()
 	params := mux.Vars(r)
 	var id = params["id"]
 	var user models.User
@@ -57,6 +59,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
+	db := utils.GetDB()
 	params := mux.Vars(r)
 	var id = params["id"]
 	var user models.User

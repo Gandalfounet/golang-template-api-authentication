@@ -9,9 +9,8 @@ import (
 	"golang-template-api-authentication/utils"
 )
 
-var db = utils.ConnectDB()
-
 func CreateUser(user *models.User) (*models.User, error){
+	db := utils.GetDB()
 	pass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -39,6 +38,7 @@ func CreateUser(user *models.User) (*models.User, error){
 }
 
 func UpdateUser(user *models.User) {
+	db := utils.GetDB()
 	db.Save(&user)
 }
 
@@ -56,6 +56,7 @@ func GenerateToken() string {
 }
 
 func FindByEmail(user *models.User) (*models.User, error) {
+	db := utils.GetDB()
 	userDb := &models.User{}
 
 	if err := db.Where("Email = ?", user.Email).First(userDb).Error; err != nil {
@@ -67,6 +68,7 @@ func FindByEmail(user *models.User) (*models.User, error) {
 }
 
 func FindByToken(token string) (*models.User, error) {
+	db := utils.GetDB()
 	userDb := &models.User{}
 
 	if err := db.Where("reset_token = ?", token).First(userDb).Error; err != nil {
@@ -80,6 +82,7 @@ func FindByToken(token string) (*models.User, error) {
 }
 
 func FindByValidationToken(token string) (*models.User, error) {
+	db := utils.GetDB()
 	userDb := &models.User{}
 
 	if err := db.Where("validation_token = ?", token).First(userDb).Error; err != nil {

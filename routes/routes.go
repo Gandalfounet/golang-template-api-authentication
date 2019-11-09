@@ -9,7 +9,6 @@ import (
 )
 
 func Handlers() *mux.Router {
-
 	r := mux.NewRouter().StrictSlash(true)
 	r.Use(CommonMiddleware)
 	authModule.Handlers(r)

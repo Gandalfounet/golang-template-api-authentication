@@ -15,7 +15,6 @@ import (
 
 )
 
-var db = utils.ConnectDB()
 
 //CreateUser function -- create a new user
 func Register(w http.ResponseWriter, r *http.Request) {
