@@ -39,10 +39,26 @@ Set your .env variables at https://github.com/Gandalfounet/golang-template-api-a
 
 ### FEATURES
 
+```
 Login
-Register
-Send validation email after register
-Send confirmation email after validation
+```
 
+```
+Register
+```
+
+```
+Send validation email after register
+```
+
+```
+Send confirmation email after validation
+```
+
+```
 Forgot password => Send link to modify password by email
+```
+
+```
 Reset password => Update the password
+```
