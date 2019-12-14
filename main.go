@@ -2,8 +2,7 @@ package main
 
 import (
 	"fmt"
-	"golang-template-api-authentication/routes"
-	"golang-template-api-authentication/utils"
+	"golang-email-api/routes"
 	"log"
 	"net/http"
 	"os"
@@ -20,7 +19,6 @@ func main() {
 	fmt.Println(e)
 
 	port := os.Getenv("PORT")
-	utils.InitDB()
 	// Handle routes
 	http.Handle("/", routes.Handlers())
 

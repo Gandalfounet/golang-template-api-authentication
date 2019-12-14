@@ -1,8 +1,7 @@
 package routes
 
 import (
-	"golang-template-api-authentication/modules/User/Authentication/routes"
-	"golang-template-api-authentication/modules/User/User/routes"
+	"golang-email-api/modules/User/User/routes"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -11,7 +10,6 @@ import (
 func Handlers() *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
 	r.Use(CommonMiddleware)
-	authModule.Handlers(r)
 	userModule.Handlers(r)
 
 	return r
