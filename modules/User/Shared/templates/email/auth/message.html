@@ -1,0 +1,24 @@
+{{define "message"}}
+{{template "header"}}
+<div>
+	<h1>Nouveau Message</h1>
+
+	<h2>Prénom: </h2>
+
+	<p>{{.Name}}</p>
+
+	<h2>Email :</h2>
+
+	<p>{{.Email}}</p>
+
+	<h2>Date souhaitée:</h2>
+
+	<p>{{.Date}}</p>
+
+	<h2>Message :</h2>
+
+	<p>{{.Message}}</p>
+</div>
+
+{{template "footer"}}
+{{end}}

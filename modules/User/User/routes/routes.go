@@ -8,7 +8,7 @@ import (
 func Handlers(r *mux.Router) *mux.Router {
 	
 	// Auth route
-	s := r.PathPrefix("/sendMail").Subrouter()
-	s.HandleFunc("/", userModule.SendMail).Methods("POST")	
+	r.HandleFunc("/", userModule.Test).Methods("GET")	
+	r.HandleFunc("/sendMail", userModule.SendMail).Methods("POST")	
 	return r
 }

@@ -36,12 +36,15 @@ func (s *smtpServer) Address() string {
 }
 type ContentLoginToken struct {
     Email  string
+    Message  string
     Name   string
+    Date   string
     URL    string
     Token  string
     Expiry time.Time
 }
 func Send(msg ContentLoginToken, templateName string) {
+    fmt.Println(msg)
     errTmp := parseTemplates()
     if errTmp != nil {
         log.Fatal("Error loading templates")
@@ -58,7 +61,6 @@ func Send(msg ContentLoginToken, templateName string) {
     password := os.Getenv("email_smtp_password")
     // Receiver email address.
     to := []string{
-        "dummygandalf34@gmail.com",
         "tariq.riahi@gmail.com",
     }
     // smtp server configuration.
@@ -103,7 +105,7 @@ func Send(msg ContentLoginToken, templateName string) {
 
 func parse(msg string) (string, error) {
     buf := new(bytes.Buffer)
-    if err := templates.ExecuteTemplate(buf, "loginToken", msg); err != nil {
+    if err := templates.ExecuteTemplate(buf, "message", msg); err != nil {
         return "", err
     }
     prem, _ := premailer.NewPremailerFromString(buf.String(), premailer.NewOptions())
@@ -133,6 +135,7 @@ func parseTemplates() error {
     templates.ParseFiles("./modules/User/Shared/templates/email/auth/resetPassword.html")
     templates.ParseFiles("./modules/User/Shared/templates/email/auth/updatePassword.html")
     templates.ParseFiles("./modules/User/Shared/templates/email/auth/validatePassword.html")
+    templates.ParseFiles("./modules/User/Shared/templates/email/auth/message.html")
 
     return nil
 }
